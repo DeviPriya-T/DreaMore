@@ -82,21 +82,19 @@
       <!-- Icons -->
       <div class="d-flex align-items-center gap-4 ms-3">
         <a href="/wishlist" class="text-light fs-5 position-relative">
-  <i class="fa-regular fa-heart"></i>
-  <% if (wishlistCount > 0) { %>
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-      <%= wishlistCount %>
-    </span>
-  <% } %>
-</a>
+          <i class="fa-regular fa-heart"></i>
+          <span id="wishlist-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger wishlist-badge"
+            style="font-size: 0.8rem; padding: 0.3em 0.5em; display: <%= wishlistCount > 0 ? 'inline-block' : 'none' %>;">
+            <%= wishlistCount %>
+          </span>
+        </a>
 
 <a href="/cart" class="text-light fs-5 position-relative">
   <i class="fa-solid fa-cart-shopping"></i>
-  <% if (cartCount > 0) { %>
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-      <%= cartCount %>
-    </span>
-  <% } %>
+  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count-badge"
+    style="font-size: 0.8rem; padding: 0.3em 0.5em; display: <%= cartCount > 0 ? 'inline-block' : 'none' %>;">
+    <%= cartCount %>
+  </span>
 </a>
 
 

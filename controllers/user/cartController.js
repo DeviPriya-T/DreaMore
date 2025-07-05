@@ -93,9 +93,99 @@ const getCartPage = async (req, res) => {
   }
 };
 
+// const addToCart = async (req, res) => {
+//   try {
+
+//     const userId = req.session.user;
+//     const { productId, quantity } = req.body;
+
+//     const product = await productModel.findById(productId);
+
+//     if (!product) {
+//       return res.json({ success: false, message: 'Product not found' });
+//     }
+
+//     if (product.stock <= 0) {
+//       return res.json({ success: false, message: 'Product is out of stock' });
+//     }
+
+
+//     const price = product.price;
+//     const qty = parseInt(quantity) || 1;
+//     const totalPrice = price * qty;
+
+
+//     let cart = await cartModel.findOne({ userId });
+
+
+//     // If no cart exists, create a new one
+//     if (!cart) {
+//       const newCart = new cartModel({
+//         userId,
+//         cartItems: [{
+//           productId,
+//           quantity: qty,
+//           price,
+//           totalPrice
+//         }]
+//       });
+
+//       await newCart.save();
+//       return res.json({ success: true, message: 'Cart created and product added' });
+//     }
+
+
+
+//     // Cart exists - check if product already in cart
+//     const existingItemIndex = cart.cartItems.findIndex(
+//       item => item.productId.toString() === productId
+//     );
+
+
+//     if (existingItemIndex > -1) {
+//       const existingItem = cart.cartItems[existingItemIndex];
+
+//       // New quantity
+//       const newQty = existingItem.quantity + qty;
+
+//       if (newQty > 5) {
+//         return res.json({ success: false, message: 'Maximum 5 items allowed per product' });
+//       }
+
+//       if (newQty > product.stock) {
+//         return res.json({ success: false, message: 'Not enough stock available' });
+//       }
+
+//       // Update quantity and total price
+//       existingItem.quantity = newQty;
+//       existingItem.totalPrice = existingItem.quantity * price;
+
+//     } else {
+//       // New product in cart
+//       if (qty > 5) {
+//         return res.json({ success: false, message: 'Maximum 5 items allowed per product' });
+//       }
+
+//       cart.cartItems.push({
+//         productId,
+//         quantity: qty,
+//         price,
+//         totalPrice
+//       });
+//     }
+
+//    await cart.save();
+
+//     return res.json({ success: true, message: 'Product added to cart' });
+
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ success: false, message: 'Server error' });
+//   }
+// };
+
 const addToCart = async (req, res) => {
   try {
-
     const userId = req.session.user;
     const { productId, quantity } = req.body;
 
@@ -109,38 +199,34 @@ const addToCart = async (req, res) => {
       return res.json({ success: false, message: 'Product is out of stock' });
     }
 
-
     const price = product.price;
     const qty = parseInt(quantity) || 1;
     const totalPrice = price * qty;
 
-
     let cart = await cartModel.findOne({ userId });
-
 
     // If no cart exists, create a new one
     if (!cart) {
       const newCart = new cartModel({
         userId,
-        cartItems: [{
-          productId,
-          quantity: qty,
-          price,
-          totalPrice
-        }]
+        cartItems: [
+          {
+            productId,
+            quantity: qty,
+            price,
+            totalPrice,
+          },
+        ],
       });
 
       await newCart.save();
-      return res.json({ success: true, message: 'Cart created and product added' });
+      return res.json({ success: true, message: 'Cart created and product added', cartCount: newCart.cartItems.length });
     }
-
-
 
     // Cart exists - check if product already in cart
     const existingItemIndex = cart.cartItems.findIndex(
-      item => item.productId.toString() === productId
+      (item) => item.productId.toString() === productId
     );
-
 
     if (existingItemIndex > -1) {
       const existingItem = cart.cartItems[existingItemIndex];
@@ -159,7 +245,6 @@ const addToCart = async (req, res) => {
       // Update quantity and total price
       existingItem.quantity = newQty;
       existingItem.totalPrice = existingItem.quantity * price;
-
     } else {
       // New product in cart
       if (qty > 5) {
@@ -170,13 +255,17 @@ const addToCart = async (req, res) => {
         productId,
         quantity: qty,
         price,
-        totalPrice
+        totalPrice,
       });
     }
 
-   await cart.save();
+    await cart.save();
 
-    return res.json({ success: true, message: 'Product added to cart' });
+    return res.json({ 
+      success: true, 
+      message: 'Product added to cart',
+      cartCount: cart.cartItems.length
+    });
 
   } catch (error) {
     console.error(error);

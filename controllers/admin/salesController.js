@@ -142,14 +142,15 @@ const generatePDF = async (res, salesData) => {
 
   // ===== Logo (Shopnow with color) =====
   doc
-    .fontSize(26)
-    .font("Helvetica-Bold")
-    .fillColor("#E67E22") // Orange
-    .text("Shop", { continued: true });
+  .fontSize(26)
+  .font("Helvetica-Bold")
+  .fillColor("#E67E22")
+  .text("Dream", { continued: true });
 
-  doc
-    .fillColor("#27AE60") // Green
-    .text("now", { align: "left" });
+doc
+  .fillColor("#27AE60")
+  .text("ore", { align: "left" });
+
 
   // Divider line
   doc

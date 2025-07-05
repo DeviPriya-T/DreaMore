@@ -211,6 +211,14 @@
         data: { productId: productId, quantity: qty },
         success: (response) => {
           if (response.success) {
+
+             // ✅ Update the cart count badge
+            const badge = document.querySelector('.cart-count-badge');
+            if (badge) {
+              badge.innerText = response.cartCount;
+              badge.style.display = response.cartCount > 0 ? 'inline-block' : 'none';
+            }
+
             Swal.fire({
               title: "Added to Cart",
               text: response.message,
@@ -244,12 +252,19 @@
 
     
                 // Add to wishlist function
-function addToWishlist(productId,el) {
+function addToWishlist(productId, el) {
   $.ajax({
     url: '/addToWishlist',
     method: "POST",
     data: { productId: productId },
     success: (response) => {
+      // ✅ Always update the badge dynamically from response
+      const badge = document.getElementById('wishlist-badge');
+      if (badge && response.wishlistCount !== undefined) {
+        badge.innerText = response.wishlistCount;
+        badge.style.display = response.wishlistCount > 0 ? 'inline-block' : 'none';
+      }
+
       if (response.status) {
         Swal.fire({
           title: "Added to Wishlist",
@@ -258,10 +273,7 @@ function addToWishlist(productId,el) {
           timer: 2000,
           showConfirmButton: false
         });
-
-        if (el) {
-          el.classList.add('selected');
-        }
+        if (el) el.classList.add('selected');
       } else {
         Swal.fire({
           title: "Already in Wishlist",
@@ -270,9 +282,7 @@ function addToWishlist(productId,el) {
           timer: 2000,
           showConfirmButton: false
         });
-        if (el) {
-          el.classList.add('selected');
-        }
+        if (el) el.classList.add('selected');
       }
     },
     error: (xhr) => {
@@ -293,6 +303,9 @@ function addToWishlist(productId,el) {
     }
   });
 }
+
+
+
   </script>
 
 

@@ -149,7 +149,7 @@ async function sendVerificationEmail(email, otp, details = {}) {
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
                     <h2>${details.greeting || 'Hello!'}</h2>
-                    <p>${details.instructions || 'Use the OTP below to verify your account:'}</p>
+                    <p>${details.instructions || 'Use the OTP below to verify your DreaMore account:'}</p>
                     <h1 style="color: #4CAF50;">${otp}</h1>
                     <p>${details.footer || 'Thank you for using our service!'}</p>
                     <hr/>
@@ -190,14 +190,15 @@ const userSignUp = async (req, res) => {
         }
 
         const otp = generateOtp();
+        console.log("Sign Up OTP:", otp);
 
         const emailSend = await sendVerificationEmail(email, otp)
-
         if (!emailSend) {
             return res.json("email-error")
         }
 
         req.session.userOtp = otp;
+        req.session.otpExpiresAt = Date.now() + 60 * 1000; // 60 seconds from now
         req.session.userData = { name, email, phone, password, referredBy: referralCode };
 
         res.render('verify-otp');
@@ -217,7 +218,11 @@ const verifyOtp = async (req, res) => {
     try {
         const { otp } = req.body
 
-        if (req.session.userOtp === otp) {
+        if (
+            req.session.userOtp === otp &&
+            req.session.otpExpiresAt &&
+            Date.now() <= req.session.otpExpiresAt
+        ) {
 
             const user = req.session.userData
 
@@ -277,9 +282,10 @@ const resendOtp = async (req, res) => {
     try {
 
         const { email } = req.session.userData;
-
         console.log(email)
+
         const resendOtp = generateOtp()
+        console.log("Resend OTP:", resendOtp);
 
         const emailSend = await sendVerificationEmail(email, resendOtp, {
             subject: "Your OTP for Login Verification",
@@ -289,6 +295,7 @@ const resendOtp = async (req, res) => {
         })
 
         req.session.userOtp = resendOtp
+        req.session.otpExpiresAt = Date.now() + 60 * 1000; // 60 seconds validity again
 
         if (emailSend) {
             return res.json({
@@ -369,6 +376,7 @@ const forgotPassEmailVerify = async (req, res) => {
         }
 
         const otp = generateOtp();
+        console.log("Forgot Password OTP:", otp);
         const emailSend = await sendVerificationEmail(user.email, otp)
 
         if (emailSend) {
