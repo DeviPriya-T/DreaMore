@@ -26,6 +26,7 @@ const getWallet = async (req, res) => {
 
     const walletBalance = wallet.balance;
 
+    // ✅ Pagination values
     const page = parseInt(req.query.page) || 1;
     const limit = 5;
     const skip = (page - 1) * limit;
@@ -46,13 +47,14 @@ const getWallet = async (req, res) => {
 
     const user = await userModel.findById(userId).select('name email');
 
+    // ✅ Make sure you pass page and totalPages here!
     res.render('wallet', {
       currentPage: 'wallet',
       user,
       walletBalance,
       transactions: paginatedTransactions,
-      page,
-      totalPages
+      page,             // ✅ Pass to EJS
+      totalPages        // ✅ Pass to EJS
     });
 
   } catch (error) {
@@ -60,6 +62,7 @@ const getWallet = async (req, res) => {
     res.status(500).render('error', { message: "Something went wrong while fetching your wallet." });
   }
 };
+
 
 
 const createWalletRazorpayOrder = async (req, res) => {
