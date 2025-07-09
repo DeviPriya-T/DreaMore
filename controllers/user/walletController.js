@@ -19,22 +19,23 @@ const razorpay = new Razorpay({
 const getWallet = async (req, res) => {
   try {
     const userId = req.session.user;
+    if (!userId) return res.redirect('/login');
 
-    if (!userId) {
-      return res.redirect('/login'); // or handle unauthorized access
-    }
-
-    // Fetch or create wallet if doesn't exist
     let wallet = await walletModel.findOne({ userId });
-    if (!wallet) {
-      wallet = await walletModel.create({ userId });
-    }
+    if (!wallet) wallet = await walletModel.create({ userId });
 
     const walletBalance = wallet.balance;
 
-    // Format transactions
-    const transactions = wallet.transactions
-      .sort((a, b) => b.createdAt - a.createdAt) // most recent first
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
+    const skip = (page - 1) * limit;
+
+    const totalTransactions = wallet.transactions.length;
+    const totalPages = Math.ceil(totalTransactions / limit);
+
+    const paginatedTransactions = wallet.transactions
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(skip, skip + limit)
       .map(txn => ({
         _id: txn._id,
         date: txn.createdAt,
@@ -43,14 +44,15 @@ const getWallet = async (req, res) => {
         description: txn.description || txn.transactionPurpose
       }));
 
-    // Get user info (for name/email)
     const user = await userModel.findById(userId).select('name email');
 
     res.render('wallet', {
       currentPage: 'wallet',
       user,
       walletBalance,
-      transactions
+      transactions: paginatedTransactions,
+      page,
+      totalPages
     });
 
   } catch (error) {
@@ -58,6 +60,7 @@ const getWallet = async (req, res) => {
     res.status(500).render('error', { message: "Something went wrong while fetching your wallet." });
   }
 };
+
 
 const createWalletRazorpayOrder = async (req, res) => {
   try {
